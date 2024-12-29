@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CitiBikeHelperTest {
 
     @Test
-    void FindStationStatus() {
+    void findStationStatus() {
         // given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
         CitiBikeHelper helper = new CitiBikeHelper(service);
@@ -24,7 +24,7 @@ class CitiBikeHelperTest {
     }
 
     @Test
-    void FindClosestStationWithBikes() {
+    void findClosestStationWithBikes() {
         // given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
         CitiBikeHelper helper = new CitiBikeHelper(service);
@@ -41,7 +41,7 @@ class CitiBikeHelperTest {
     }
 
     @Test
-    void FindClosestStationWithDocks() {
+    void findClosestStationWithDocks() {
         // given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
         CitiBikeHelper helper = new CitiBikeHelper(service);
