@@ -12,9 +12,10 @@ public class StationsResponse {
     public static class Station {
         //CHECKSTYLE:OFF
         public String station_id;
+        //CHECKSTYLE:ON
         public String name;
         public double lat;
         public double lon;
-        //CHECKSTYLE:ON
+
     }
 }
