@@ -45,7 +45,7 @@ class CitiBikeHelperTest {
         // given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
         CitiBikeHelper helper = new CitiBikeHelper(service);
-        double lat = 40.767; // Central Park coordinates
+        double lat = 40.767;
         double lon = -73.971;
 
         // when
