@@ -81,7 +81,10 @@ public class CitiBikeHelper {
 
         for (StationsResponse.Station station : stationsResponse.data.stations) {
             StatusResponse.StationStatus status = statusMap.get(station.station_id);
-            boolean hasResources = status != null && (checkBikes ? status.num_bikes_available > 0 : status.num_docks_available > 0);
+            boolean hasResources = status != null
+                    && (checkBikes
+                    ? status.num_bikes_available > 0
+                    : status.num_docks_available > 0);
 
             if (hasResources) {
                 double distance = calculateDistance(lat, lon, station.lat, station.lon);
