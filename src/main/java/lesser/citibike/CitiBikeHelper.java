@@ -8,13 +8,29 @@ import java.util.Map;
 
 public class CitiBikeHelper {
     private final CitiBikeService service;
+    private Single<StationsResponse> stationsResponse;
+    private Single<StatusResponse> statusResponse;
 
     public CitiBikeHelper(CitiBikeService service) {
         this.service = service;
     }
 
+    private Single<StationsResponse> getStations() {
+        if (stationsResponse == null) {
+            stationsResponse = service.getStations().subscribeOn(Schedulers.io());
+        }
+        return stationsResponse;
+    }
+
+    private Single<StatusResponse> getStationStatus() {
+        if (statusResponse == null) {
+            statusResponse = service.getStationStatus().subscribeOn(Schedulers.io());
+        }
+        return statusResponse;
+    }
+
     public Single<StatusResponse.StationStatus> findStationStatus(String stationId) {
-        return service.getStationStatus()
+        return getStationStatus()
                 .map(response -> {
                     for (StatusResponse.StationStatus status : response.data.stations) {
                         if (status.station_id.equals(stationId)) {
@@ -22,14 +38,13 @@ public class CitiBikeHelper {
                         }
                     }
                     throw new Exception("Station not found");
-                })
-                .subscribeOn(Schedulers.io());
+                });
     }
 
     public Single<StationsResponse.Station> findClosestStationWithBikes(double lat, double lon) {
         return Single.zip(
-                service.getStations().subscribeOn(Schedulers.io()),
-                service.getStationStatus().subscribeOn(Schedulers.io()),
+                getStations(),
+                getStationStatus(),
                 (stationsResponse, statusResponse) -> {
                     Map<String, StatusResponse.StationStatus> statusMap = buildStatusMap(statusResponse);
                     return findClosestStation(stationsResponse, lat, lon, statusMap, true);
@@ -38,8 +53,8 @@ public class CitiBikeHelper {
 
     public Single<StationsResponse.Station> findClosestStationWithDocks(double lat, double lon) {
         return Single.zip(
-                service.getStations().subscribeOn(Schedulers.io()),
-                service.getStationStatus().subscribeOn(Schedulers.io()),
+                getStations(),
+                getStationStatus(),
                 (stationsResponse, statusResponse) -> {
                     Map<String, StatusResponse.StationStatus> statusMap = buildStatusMap(statusResponse);
                     return findClosestStation(stationsResponse, lat, lon, statusMap, false);
@@ -66,9 +81,9 @@ public class CitiBikeHelper {
 
         for (StationsResponse.Station station : stationsResponse.data.stations) {
             StatusResponse.StationStatus status = statusMap.get(station.station_id);
-            boolean hasResources = checkBikes ? status.num_bikes_available > 0 : status.num_docks_available > 0;
+            boolean hasResources = status != null && (checkBikes ? status.num_bikes_available > 0 : status.num_docks_available > 0);
 
-            if (status != null && hasResources) {
+            if (hasResources) {
                 double distance = calculateDistance(lat, lon, station.lat, station.lon);
                 if (distance < closestDistance) {
                     closestDistance = distance;
@@ -85,13 +100,12 @@ public class CitiBikeHelper {
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double earthRadius = 6371;
+        double earthRadius = 6371; // Radius of the Earth in kilometers
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return earthRadius * c;
     }
