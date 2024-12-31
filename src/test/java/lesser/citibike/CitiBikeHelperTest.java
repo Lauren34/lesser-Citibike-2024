@@ -16,13 +16,8 @@ class CitiBikeHelperTest {
         String stationId = "816e50eb-dc4b-47dc-b773-154e2020cb0d";
 
         // when
-        StatusResponse.StationStatus status = null;
-        for (StatusResponse.StationStatus s : statusResponse.data.stations) {
-            if (s.station_id.equals(stationId)) {
-                status = s;
-                break;
-            }
-        }
+        StatusResponse.StationStatus status = helper.findStationStatus(stationId);
+
         // then
         assertNotNull(status, "Status should not be null");
         assertEquals(stationId, status.station_id, "Station ID should match");

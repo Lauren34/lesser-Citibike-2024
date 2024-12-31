@@ -24,6 +24,15 @@ public class CitiBikeHelper {
         return findClosestStation(stationsResponse, lat, lon, statusMap, false);
     }
 
+    public StatusResponse.StationStatus findStationStatus(String stationId) {
+        for (StatusResponse.StationStatus status : statusResponse.data.stations) {
+            if (status.station_id.equals(stationId)) {
+                return status;
+            }
+        }
+        return null;
+    }
+
     private Map<String, StatusResponse.StationStatus> buildStatusMap(StatusResponse statusResponse) {
         Map<String, StatusResponse.StationStatus> statusMap = new HashMap<>();
         for (StatusResponse.StationStatus status : statusResponse.data.stations) {
