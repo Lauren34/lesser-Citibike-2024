@@ -19,10 +19,19 @@ public class CitiBikeRequestHandler implements RequestHandler<APIGatewayProxyReq
             CitiBikeService service = new CitiBikeServiceFactory().getService();
             StationsResponse stationsResponse = service.getStations().blockingGet();
             StatusResponse statusResponse = service.getStationStatus().blockingGet();
-            CitiBikeHelper helper = new CitiBikeHelper(stationsResponse, statusResponse);
+            CitiBikeHelper helper = new CitiBikeHelper(
+                    stationsResponse,
+                    statusResponse
+            );
 
-            StationsResponse.Station startStation = helper.findClosestStationWithBikes(request.from.lat, request.from.lon);
-            StationsResponse.Station endStation = helper.findClosestStationWithDocks(request.to.lat, request.to.lon);
+            StationsResponse.Station startStation = helper.findClosestStationWithBikes(
+                    request.from.lat,
+                    request.from.lon
+            );
+            StationsResponse.Station endStation = helper.findClosestStationWithDocks(
+                    request.to.lat,
+                    request.to.lon
+            );
 
             CitiBikeResponse response = new CitiBikeResponse(
                     new Location(request.from.lat, request.from.lon),
