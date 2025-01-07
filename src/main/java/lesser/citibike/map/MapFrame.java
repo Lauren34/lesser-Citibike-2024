@@ -29,10 +29,10 @@ public class MapFrame extends JFrame {
 
     public MapFrame(MapController controller) {
         this.controller = controller;
-        createAndShowGUI();
+        createAndShowGui();
     }
 
-    private void createAndShowGUI() {
+    private void createAndShowGui() {
         TileFactoryInfo info = new OSMTileFactoryInfo();
         DefaultTileFactory tileFactory = new DefaultTileFactory(info);
         mapViewer.setTileFactory(tileFactory);
@@ -47,14 +47,19 @@ public class MapFrame extends JFrame {
                 GeoPosition position = mapViewer.convertPointToGeoPosition(e.getPoint());
                 if (fromLocation == null) {
                     fromLocation = position;
-                    coordinatesArea.append("Start: " + position.getLatitude() + ", " + position.getLongitude() + "\n");
+                    coordinatesArea.append("Start: "
+                            + position.getLatitude() + ", "
+                            + position.getLongitude() + "\n");
                     addWaypoint(position, "Start");
                 } else if (toLocation == null) {
                     toLocation = position;
-                    coordinatesArea.append("Destination: " + position.getLatitude() + ", " + position.getLongitude() + "\n");
+                    coordinatesArea.append("Destination: "
+                            + position.getLatitude() + ", "
+                            + position.getLongitude() + "\n");
                     addWaypoint(position, "Destination");
                 } else {
-                    JOptionPane.showMessageDialog(null, "Both locations already set! Use 'Clear' to reset.");
+                    JOptionPane.showMessageDialog(null,
+                            "Both locations already set! Use 'Clear' to reset.");
                 }
             }
         });
@@ -65,7 +70,8 @@ public class MapFrame extends JFrame {
 
         findRouteButton.addActionListener(e -> {
             if (fromLocation == null || toLocation == null) {
-                JOptionPane.showMessageDialog(this, "Please set both start and destination points.");
+                JOptionPane.showMessageDialog(this,
+                        "Please set both start and destination points.");
             } else {
                 calculateAndDrawRoute();
             }
@@ -109,7 +115,8 @@ public class MapFrame extends JFrame {
                     routePoints.clear();
                     routePoints.addAll(route);
                     drawRoute();
-                }, throwable -> JOptionPane.showMessageDialog(this, "Error fetching route: " + throwable.getMessage()));
+                }, throwable -> JOptionPane.showMessageDialog(this,
+                        "Error fetching route: " + throwable.getMessage()));
     }
 
     private void drawRoute() {
