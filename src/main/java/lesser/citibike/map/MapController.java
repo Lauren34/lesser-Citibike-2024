@@ -57,7 +57,9 @@ public class MapController {
         toLocation = null;
         routePoints.clear();
         waypoints.clear();
-        if (coordinatesArea != null) coordinatesArea.setText("");
+        if (coordinatesArea != null) {
+            coordinatesArea.setText("");
+        }
     }
 
     public void calculateAndDrawRoute(JXMapViewer mapViewer) {
