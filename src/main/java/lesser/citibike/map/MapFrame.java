@@ -13,15 +13,16 @@ import java.awt.event.MouseEvent;
 public class MapFrame extends JFrame {
     private final JXMapViewer mapViewer = new JXMapViewer();
     private final MapController controller;
-    private final JTextArea coordinatesArea = new JTextArea(2, 40);
+    private final JTextField coordinatesField = new JTextField(); // Single-line text box for coordinates
 
     public MapFrame(MapController controller) {
         this.controller = controller;
-        controller.setCoordinatesArea(coordinatesArea);
+        controller.setCoordinatesField(coordinatesField);
         createAndShowGui();
     }
 
     private void createAndShowGui() {
+        // Initialize the map viewer
         DefaultTileFactory tileFactory = new DefaultTileFactory(new OSMTileFactoryInfo());
         mapViewer.setTileFactory(tileFactory);
 
@@ -29,41 +30,41 @@ public class MapFrame extends JFrame {
         mapViewer.setZoom(10);
         mapViewer.setAddressLocation(nyc);
 
+        // Mouse listener for setting waypoints
         mapViewer.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 GeoPosition position = mapViewer.convertPointToGeoPosition(e.getPoint());
                 System.out.println("Clicked position: " + position.getLatitude() + ", " + position.getLongitude());
-
-                if (controller.getWaypoints().isEmpty()) {
-                    controller.setStartPoint(position);
-                } else if (controller.getWaypoints().size() == 1) {
-                    controller.setEndPoint(position, mapViewer);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Both locations already set! Use 'Clear' to reset.");
-                }
+                controller.handleMapClick(position, mapViewer); // Delegate to the controller
             }
         });
 
+        // Create control panel with buttons
         JPanel controlPanel = new JPanel();
         JButton findRouteButton = new JButton("Map");
         JButton clearButton = new JButton("Clear");
 
         findRouteButton.addActionListener(e -> controller.calculateAndDrawRoute(mapViewer));
-
         clearButton.addActionListener(e -> {
-            controller.clearPoints();
-            mapViewer.setOverlayPainter(null);
+            controller.clearPoints(mapViewer);
+            coordinatesField.setText("");
         });
 
         controlPanel.add(findRouteButton);
         controlPanel.add(clearButton);
 
+        // Set up layout
         setLayout(new BorderLayout());
-        add(mapViewer, BorderLayout.CENTER);
-        add(controlPanel, BorderLayout.SOUTH);
-        add(new JScrollPane(coordinatesArea), BorderLayout.NORTH);
+        add(mapViewer, BorderLayout.CENTER); // Map takes up the main area
+        add(controlPanel, BorderLayout.SOUTH); // Buttons at the bottom
+        add(coordinatesField, BorderLayout.NORTH); // Single-line text box for coordinates
 
+        // Configure coordinates field
+        coordinatesField.setEditable(false);
+        coordinatesField.setHorizontalAlignment(SwingConstants.LEFT);
+
+        // Frame settings
         setTitle("BikeMap");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

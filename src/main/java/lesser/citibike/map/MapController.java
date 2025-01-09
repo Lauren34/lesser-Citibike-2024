@@ -16,49 +16,23 @@ public class MapController {
     private GeoPosition toLocation;
     private final List<GeoPosition> routePoints = new ArrayList<>();
     private final Set<WaypointAdapter> waypoints = new HashSet<>();
-    private JTextArea coordinatesArea;
+    private JTextField coordinatesField;
 
     public MapController(CitiBikeMapService service) {
         this.service = service;
     }
 
-    public void setCoordinatesArea(JTextArea coordinatesArea) {
-        this.coordinatesArea = coordinatesArea;
+    public void setCoordinatesField(JTextField coordinatesField) {
+        this.coordinatesField = coordinatesField;
     }
 
-    public void setStartPoint(GeoPosition position) {
-        if (fromLocation == null) {
-            fromLocation = position;
-            addCoordinateToTextArea("Start", position);
-            addWaypoint(position, "Start");
+    public void handleMapClick(GeoPosition position, JXMapViewer mapViewer) {
+        if (waypoints.isEmpty()) {
+            setStartPoint(position);
+        } else if (waypoints.size() == 1) {
+            setEndPoint(position, mapViewer);
         } else {
-            JOptionPane.showMessageDialog(null, "Start location already set. Clear to reset.");
-        }
-    }
-
-    public void setEndPoint(GeoPosition position, JXMapViewer mapViewer) {
-        if (toLocation == null) {
-            toLocation = position;
-            addCoordinateToTextArea("Destination", position);
-            addWaypoint(position, "Destination");
-
-            routePoints.clear();
-            routePoints.add(fromLocation);
-            routePoints.add(toLocation);
-
-            drawRoute(mapViewer);
-        } else {
-            JOptionPane.showMessageDialog(null, "Destination location already set. Clear to reset.");
-        }
-    }
-
-    public void clearPoints() {
-        fromLocation = null;
-        toLocation = null;
-        routePoints.clear();
-        waypoints.clear();
-        if (coordinatesArea != null) {
-            coordinatesArea.setText("");
+            JOptionPane.showMessageDialog(null, "Both locations already set! Use 'Clear' to reset.");
         }
     }
 
@@ -77,33 +51,64 @@ public class MapController {
                         "Error fetching route: " + throwable.getMessage()));
     }
 
-    public Single<List<GeoPosition>> getRoute() {
+    private Single<List<GeoPosition>> getRoute() {
         CitiBikeMapRequest request = new CitiBikeMapRequest(
                 new MapLocation(fromLocation.getLatitude(), fromLocation.getLongitude()),
                 new MapLocation(toLocation.getLatitude(), toLocation.getLongitude())
         );
 
         return service.getRoute(request)
-                .map(responseBody -> List.of(
-                        new GeoPosition(responseBody.from.lat, responseBody.from.lon),
-                        new GeoPosition(responseBody.start.lat, responseBody.start.lon),
-                        new GeoPosition(responseBody.end.lat, responseBody.end.lon),
-                        new GeoPosition(responseBody.to.lat, responseBody.to.lon)
-                ));
+                .map(responseBody -> {
+                    List<GeoPosition> positions = new ArrayList<>();
+                    positions.add(new GeoPosition(responseBody.from.lat, responseBody.from.lon));
+                    positions.add(new GeoPosition(responseBody.start.lat, responseBody.start.lon));
+                    positions.add(new GeoPosition(responseBody.end.lat, responseBody.end.lon));
+                    positions.add(new GeoPosition(responseBody.to.lat, responseBody.to.lon));
+                    return positions;
+                });
     }
 
     private void drawRoute(JXMapViewer mapViewer) {
-        RoutePainter routePainter = new RoutePainter(routePoints);
-
+        RoutePainter routePainter = new RoutePainter(routePoints, waypoints);
         mapViewer.setOverlayPainter(routePainter);
-
         mapViewer.zoomToBestFit(new HashSet<>(routePoints), 0.7);
     }
 
-    private void addCoordinateToTextArea(String label, GeoPosition position) {
-        if (coordinatesArea != null) {
-            coordinatesArea.append(label + ": " + position.getLatitude() + ", " + position.getLongitude() + "\n");
+    public void setStartPoint(GeoPosition position) {
+        if (fromLocation == null) {
+            fromLocation = position;
+            addWaypoint(position, "Start");
+            updateCoordinatesField();
+        } else {
+            JOptionPane.showMessageDialog(null, "Start location already set. Clear to reset.");
         }
+    }
+
+    public void setEndPoint(GeoPosition position, JXMapViewer mapViewer) {
+        if (toLocation == null) {
+            toLocation = position;
+            addWaypoint(position, "Destination");
+
+            routePoints.clear();
+            routePoints.add(fromLocation);
+            routePoints.add(toLocation);
+
+            drawRoute(mapViewer);
+            updateCoordinatesField();
+        } else {
+            JOptionPane.showMessageDialog(null, "Destination location already set. Clear to reset.");
+        }
+    }
+
+    public void clearPoints(JXMapViewer mapViewer) {
+        fromLocation = null;
+        toLocation = null;
+        routePoints.clear();
+        waypoints.clear();
+        if (coordinatesField != null) {
+            coordinatesField.setText("");
+        }
+        mapViewer.setOverlayPainter(null);
     }
 
     private void addWaypoint(GeoPosition position, String label) {
@@ -112,5 +117,20 @@ public class MapController {
 
     public Set<WaypointAdapter> getWaypoints() {
         return waypoints;
+    }
+
+    private void updateCoordinatesField() {
+        if (coordinatesField != null) {
+            StringBuilder coordinatesText = new StringBuilder();
+            for (WaypointAdapter waypoint : waypoints) {
+                coordinatesText.append(waypoint.getLabel()).append(": ")
+                        .append(waypoint.getPosition().getLatitude()).append(", ")
+                        .append(waypoint.getPosition().getLongitude()).append(" | ");
+            }
+            if (coordinatesText.length() > 0) {
+                coordinatesText.setLength(coordinatesText.length() - 3); // Remove trailing " | "
+            }
+            coordinatesField.setText(coordinatesText.toString());
+        }
     }
 }
