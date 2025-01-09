@@ -4,4 +4,4 @@ The application sends these points to an AWS Lambda service, which determines th
 renting and returning a bike. The response is displayed on the map, with markers at the stations and a route connecting
 the selected points. The application uses `WaypointPainter` and `RoutePainter` to 
 visualize the route and key locations effectively.
-![README -CitiBike.png](..%2F..%2FDesktop%2FREADME%20-CitiBike.png)
+![Readme.png](Readme.png)
