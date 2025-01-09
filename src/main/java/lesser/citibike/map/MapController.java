@@ -128,7 +128,7 @@ public class MapController {
                         .append(waypoint.getPosition().getLongitude()).append(" | ");
             }
             if (coordinatesText.length() > 0) {
-                coordinatesText.setLength(coordinatesText.length() - 3); // Remove trailing " | "
+                coordinatesText.setLength(coordinatesText.length() - 3);
             }
             coordinatesField.setText(coordinatesText.toString());
         }

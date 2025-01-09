@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class RoutePainter implements Painter<JXMapViewer> {
     private final List<GeoPosition> track;
-    private final Set<WaypointAdapter> waypoints; // Waypoints to display
+    private final Set<WaypointAdapter> waypoints;
 
     public RoutePainter(List<GeoPosition> track, Set<WaypointAdapter> waypoints) {
         this.track = track;
@@ -24,7 +24,6 @@ public class RoutePainter implements Painter<JXMapViewer> {
         Rectangle viewportBounds = map.getViewportBounds();
         g.translate(-viewportBounds.getX(), -viewportBounds.getY());
 
-        // Draw the route
         g.setColor(Color.RED);
         g.setStroke(new BasicStroke(3));
         Point2D lastPoint = null;
@@ -37,16 +36,13 @@ public class RoutePainter implements Painter<JXMapViewer> {
             lastPoint = currentPoint;
         }
 
-        // Draw the waypoints
         for (WaypointAdapter waypoint : waypoints) {
             GeoPosition position = waypoint.getPosition();
             Point2D point = map.getTileFactory().geoToPixel(position, map.getZoom());
 
-            // Draw the waypoint marker
             g.setColor(Color.BLUE);
             g.fillOval((int) point.getX() - 5, (int) point.getY() - 5, 10, 10);
 
-            // Draw the waypoint label
             g.setColor(Color.BLACK);
             g.drawString(waypoint.getLabel(), (int) point.getX() + 5, (int) point.getY() - 5);
         }
