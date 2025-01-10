@@ -49,8 +49,9 @@ public class StationsCache {
     }
 
     private boolean isCacheValid() {
-        return stationsData != null && lastUpdated != null &&
-                Duration.between(lastUpdated, Instant.now()).toMinutes() <= 60;
+        return stationsData != null
+                && lastUpdated != null
+                && Duration.between(lastUpdated, Instant.now()).toMinutes() <= 60;
     }
 
     private boolean isS3DataRecent() {
